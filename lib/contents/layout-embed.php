@@ -32,41 +32,48 @@
  *
  */
 
-$URI = $_SERVER["REQUEST_URI"];
+/**
+ * @var $TITLE
+ * @var $FILE
+ */
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-define("IKARUS_VERSION", '1.0.3');
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/public/css/bootstrap.min.css" media="all">
 
-if(preg_match("%/?public/(.+?)$%i", $URI, $ms)) {
-    if(file_exists(__DIR__ . "$URI"))
-        return false;
-}
+    <title><?=$TITLE?></title>
+</head>
+<body>
+<div class="container">
+    <?php
+    require $FILE;
+    ?>
+</div>
 
-if(getenv("IKARUS_WEB_COMPONENTS_EMBED")) {
-    $layoutFile = __DIR__ . "/contents/layout-embed.php";
-} else {
-    $layoutFile = __DIR__ . "/contents/layout.php";
-}
+<footer class="bg-secondary fixed-bottom py-3 text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-4 text-left">
+                © by TASoft Applications
+            </div>
+            <div class="col-4 text-center">
+                Ikarus SPS
+            </div>
+            <div class="col-4 text-right">
+                v<?=IKARUS_VERSION?>
+            </div>
+        </div>
+    </div>
+</footer>
 
-if($URI == '/')
-    $URI = 'index.php';
-
-$FILE = __DIR__ . "/contents/$URI";
-if(file_exists($FILE)) {
-    $TITLE = "Ahh";
-
-    $tokens = token_get_all( file_get_contents($FILE) );
-    foreach($tokens as $token) {
-        if(is_array($token) && $token[0] == T_DOC_COMMENT) {
-            $comment = $token[1];
-
-            if(preg_match("%^\s*\*\s*@title\s+(.+?)\s*$%im", $comment, $ms)) {
-                $TITLE = $ms[1];
-            }
-        }
-    }
-
-    require $layoutFile;
-} else {
-    http_response_code(404);
-    echo "<h1>404 Not Found</h1>";
-}
+<script src="/public/js/jquery.min.js" type="application/javascript"></script>
+<script src="/public/js/popper.min.js" type="application/javascript"></script>
+<script src="/public/js/bootstrap.min.js" type="application/javascript"></script>
+</body>
+</html>

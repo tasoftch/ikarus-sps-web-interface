@@ -10,7 +10,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Ikarus\\Web\\" : "src"
+      "Ikarus\\" : "src"
     }
   },
   "require" : {

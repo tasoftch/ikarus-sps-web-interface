@@ -44,4 +44,10 @@ class WebServerProcess extends BackgroundProcess
         $t = escapeshellarg( dirname(__DIR__) . "/lib" );
         parent::__construct("php -S $host:$port -t $t $t/web.php");
     }
+
+    public function run()
+    {
+        putenv("export IKARUS_SPS_PROCESS=" . getmypid());
+        parent::run();
+    }
 }

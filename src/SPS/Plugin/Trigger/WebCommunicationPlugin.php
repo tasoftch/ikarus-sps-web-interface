@@ -32,41 +32,15 @@
  *
  */
 
-$URI = $_SERVER["REQUEST_URI"];
+namespace Ikarus\SPS\Plugin\Trigger;
 
-define("IKARUS_VERSION", '1.0.3');
 
-if(preg_match("%/?public/(.+?)$%i", $URI, $ms)) {
-    if(file_exists(__DIR__ . "$URI"))
-        return false;
-}
-
-if(getenv("IKARUS_WEB_COMPONENTS_EMBED")) {
-    $layoutFile = __DIR__ . "/contents/layout-embed.php";
-} else {
-    $layoutFile = __DIR__ . "/contents/layout.php";
-}
-
-if($URI == '/')
-    $URI = 'index.php';
-
-$FILE = __DIR__ . "/contents/$URI";
-if(file_exists($FILE)) {
-    $TITLE = "Ahh";
-
-    $tokens = token_get_all( file_get_contents($FILE) );
-    foreach($tokens as $token) {
-        if(is_array($token) && $token[0] == T_DOC_COMMENT) {
-            $comment = $token[1];
-
-            if(preg_match("%^\s*\*\s*@title\s+(.+?)\s*$%im", $comment, $ms)) {
-                $TITLE = $ms[1];
-            }
-        }
+class WebCommunicationPlugin extends RemoteEventServerPlugin
+{
+    public function __construct()
+    {
+        parent::__construct('0.0.0.0', 0, NULL);
     }
 
-    require $layoutFile;
-} else {
-    http_response_code(404);
-    echo "<h1>404 Not Found</h1>";
+
 }
