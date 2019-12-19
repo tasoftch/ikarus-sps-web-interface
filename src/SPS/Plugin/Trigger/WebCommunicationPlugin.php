@@ -35,12 +35,110 @@
 namespace Ikarus\SPS\Plugin\Trigger;
 
 
-class WebCommunicationPlugin extends RemoteEventServerPlugin
+use Ikarus\SPS\Plugin\AbstractPlugin;
+use Ikarus\SPS\Plugin\PluginManagementInterface;
+use Ikarus\SPS\Plugin\TearDownPluginInterface;
+use TASoft\Util\Pipe\PipeInterface;
+
+class WebCommunicationPlugin extends AbstractPlugin implements TriggerPluginInterface, TearDownPluginInterface
 {
-    public function __construct()
+    private $toProcessPipe;
+    private $fromProcessPipe;
+
+    /** @var resource */
+    private $sock, $msgsock;
+
+    public function __construct(PipeInterface $toProcessPipe = NULL, PipeInterface $fromProcessPipe = NULL)
     {
-        parent::__construct('0.0.0.0', 0, NULL);
+        $this->toProcessPipe = $toProcessPipe;
+        $this->fromProcessPipe = $fromProcessPipe;
     }
 
+    public function run(PluginManagementInterface $manager)
+    {
+        if (($this->sock = $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
+            trigger_error( "socket_create() failed: " . socket_strerror(socket_last_error()), E_USER_WARNING);
+        }
 
+        if (socket_bind($sock, "0.0.0.0", 0) === false) {
+            trigger_error( "socket_bind() failed: " . socket_strerror(socket_last_error($sock)), E_USER_WARNING);
+        }
+
+        socket_getsockname($sock, $name, $port);
+        $this->getFromProcessPipe()->sendData($port);
+
+
+        if (socket_listen($sock, 5) === false) {
+            trigger_error( "socket_listen() failed: " . socket_strerror(socket_last_error($sock)), E_USER_WARNING);
+        }
+
+        do {
+            if (($this->msgsock = $msgsock = socket_accept($sock)) === false) {
+                trigger_error( "socket_accept() failed: " . socket_strerror(socket_last_error($sock)), E_USER_WARNING);
+                break;
+            }
+
+            declare(ticks=1) {
+                $buf = socket_read ($msgsock, 2048, 0);
+            }
+
+            if (false === $buf) {
+                trigger_error( "socket_read() failed: " . socket_strerror(socket_last_error($msgsock)) , E_USER_WARNING);
+                socket_close($msgsock);
+                $this->msgsock = NULL;
+                break;
+            }
+
+            $this->getFromProcessPipe()->sendData($buf);
+            $response = $this->getToProcessPipe()->receiveData();
+
+            socket_write($msgsock, $response, strlen($response));
+
+            socket_close($msgsock);
+            $this->msgsock = NULL;
+        } while (1);
+
+        socket_close($sock);
+        $this->sock = NULL;
+    }
+
+    public function tearDown()
+    {
+        if($this->msgsock)
+            socket_close($this->msgsock);
+        if($this->sock)
+            socket_close($this->sock);
+    }
+
+    /**
+     * @return PipeInterface
+     */
+    public function getToProcessPipe(): PipeInterface
+    {
+        return $this->toProcessPipe;
+    }
+
+    /**
+     * @param PipeInterface $toProcessPipe
+     */
+    public function setToProcessPipe(PipeInterface $toProcessPipe)
+    {
+        $this->toProcessPipe = $toProcessPipe;
+    }
+
+    /**
+     * @return PipeInterface
+     */
+    public function getFromProcessPipe(): PipeInterface
+    {
+        return $this->fromProcessPipe;
+    }
+
+    /**
+     * @param PipeInterface $fromProcessPipe
+     */
+    public function setFromProcessPipe(PipeInterface $fromProcessPipe)
+    {
+        $this->fromProcessPipe = $fromProcessPipe;
+    }
 }
