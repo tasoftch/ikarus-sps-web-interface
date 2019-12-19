@@ -32,14 +32,20 @@
  *
  */
 
-namespace Ikarus\SPS\Plugin\Trigger;
+namespace Ikarus\WEB\SPS\Plugin\Trigger;
 
 
 use Ikarus\SPS\Plugin\AbstractPlugin;
 use Ikarus\SPS\Plugin\PluginManagementInterface;
 use Ikarus\SPS\Plugin\TearDownPluginInterface;
+use Ikarus\SPS\Plugin\Trigger\TriggerPluginInterface;
 use TASoft\Util\Pipe\PipeInterface;
 
+/**
+ * Class WebCommunicationPlugin
+ * @package Ikarus\SPS\Plugin\Trigger
+ * @internal
+ */
 class WebCommunicationPlugin extends AbstractPlugin implements TriggerPluginInterface, TearDownPluginInterface
 {
     private $toProcessPipe;

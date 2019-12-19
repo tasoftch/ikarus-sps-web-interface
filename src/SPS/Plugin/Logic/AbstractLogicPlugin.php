@@ -32,22 +32,36 @@
  *
  */
 
-namespace Ikarus\WEB;
+namespace Ikarus\WEB\SPS\Plugin\Logic;
 
 
-use TASoft\Util\BackgroundProcess;
+use Ikarus\Logic\Model\Component\NodeComponentInterface;
+use Ikarus\SPS\Plugin\AbstractPlugin;
+use Ikarus\SPS\Plugin\PluginInterface;
 
-class WebServerProcess extends BackgroundProcess
+abstract class AbstractLogicPlugin implements NodeComponentInterface, PluginInterface
 {
-    public function __construct(string $host, int $port = 80)
+    /**
+     * @inheritDoc
+     */
+    public function getInputSockets(): ?array
     {
-        $t = escapeshellarg( dirname(__DIR__) . "/lib" );
-        parent::__construct("php -S $host:$port -t $t $t/web.php");
+        return NULL;
     }
 
-    public function run()
+    /**
+     * @inheritDoc
+     */
+    public function getOutputSockets(): ?array
     {
-        putenv("export IKARUS_SPS_PROCESS=" . getmypid());
-        parent::run();
+        return NULL;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIdentifier(): string
+    {
+        return $this->getName();
     }
 }

@@ -32,22 +32,29 @@
  *
  */
 
-namespace Ikarus\WEB;
+namespace Ikarus\WEB\Exception;
 
 
-use TASoft\Util\BackgroundProcess;
+use Ikarus\SPS\Exception\SPSException;
 
-class WebServerProcess extends BackgroundProcess
+class SocketException extends SPSException
 {
-    public function __construct(string $host, int $port = 80)
+    /** @var resource|null */
+    private $socket;
+
+    /**
+     * @return resource|null
+     */
+    public function getSocket()
     {
-        $t = escapeshellarg( dirname(__DIR__) . "/lib" );
-        parent::__construct("php -S $host:$port -t $t $t/web.php");
+        return $this->socket;
     }
 
-    public function run()
+    /**
+     * @param resource|null $socket
+     */
+    public function setSocket($socket): void
     {
-        putenv("export IKARUS_SPS_PROCESS=" . getmypid());
-        parent::run();
+        $this->socket = $socket;
     }
 }

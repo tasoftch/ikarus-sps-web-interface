@@ -1,5 +1,5 @@
 {
-  "name": "ikarus/web-interface",
+  "name": "ikarus/sps-web-interface",
   "license": "BSD-3-Clause",
   "minimum-stability": "dev",
   "authors": [
@@ -10,16 +10,16 @@
   ],
   "autoload": {
     "psr-4": {
-      "Ikarus\\" : "src"
+      "Ikarus\\WEB\\" : "src"
     }
   },
   "require" : {
     "php": "^7.2",
     "ikarus/sps": "dev-master",
-    "tasoft/process": "dev-master"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^6"
+    "ikarus/logic-editor": "dev-master",
+    "ikarus/logic-engine": "dev-master",
+    "ext-sockets": "*",
+    "ext-json": "*"
   },
   "bin": [
     "lib/web.php"

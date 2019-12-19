@@ -32,22 +32,21 @@
  *
  */
 
-namespace Ikarus\WEB;
+/**
+ * IPAddressDetectionTest.php
+ * ikarus-sps-web-interface
+ *
+ * Created on 2019-12-19 17:01 by thomas
+ */
 
+use Ikarus\WEB\SPS\WebEngine;
+use PHPUnit\Framework\TestCase;
 
-use TASoft\Util\BackgroundProcess;
-
-class WebServerProcess extends BackgroundProcess
+class IPAddressDetectionTest extends TestCase
 {
-    public function __construct(string $host, int $port = 80)
-    {
-        $t = escapeshellarg( dirname(__DIR__) . "/lib" );
-        parent::__construct("php -S $host:$port -t $t $t/web.php");
-    }
-
-    public function run()
-    {
-        putenv("export IKARUS_SPS_PROCESS=" . getmypid());
-        parent::run();
+    public function testIPAddressGetter() {
+        $engine = new WebEngine();
+        $this->assertTrue( preg_match("/^\d+\.\d+\.\d+\.\d+$/i", $hn = $engine->getMyHostname()) ? true : false );
+        echo $hn;
     }
 }

@@ -36,9 +36,95 @@
  * @title Welcome to Ikarus SPS Web Interface
  */
 
-$SPS_PROCESS = getenv("IKARUS_SPS_PROCESS");
+/**
+ * @var $CONFIG
+ */
 
 ?>
+<script type="application/javascript" src="/public/js/api.js"></script>
+
+<script type="application/javascript">
+    $(function() {
+        Skyline.API.get("/api/status")
+            .success(function(data) {
+                update_state(data);
+            });
+    });
+
+    function update_state(state) {
+        $(".btn.control").addClass('disabled');
+
+        switch (state) {
+            case 'ready':
+                $("#status-text").setClass("text-primary").text("Ready");
+                $("#btn-run").removeClass("disabled");
+                $("#btn-stop").removeClass("disabled");
+                $("#btn-edit").removeClass("disabled");
+                break;
+            case 'idle':
+                $("#status-text").setClass("text-primary").text("Ready (Idle)");
+                $("#btn-run").removeClass("disabled");
+                $("#btn-stop").removeClass("disabled");
+                $("#btn-edit").removeClass("disabled");
+                break;
+            case 'busy':
+            case 'running':
+                $("#status-text").setClass("text-success").text("Running");
+                $("#btn-idle").removeClass("disabled");
+                break;
+            case 'stopped':
+                $("#status-text").setClass("text-danger").text("Stopped");
+                break;
+        }
+    }
+
+    function run_sps() {
+        Skyline.API.get("/api/run")
+            .success(function(data) {
+                if(data == 'OK') {
+                    update_state('running');
+                } else
+                    alert("Could not run SPS");
+            });
+    }
+
+    function idle_sps() {
+        Skyline.API.get("/api/idle")
+            .success(function(data) {
+                if(data == 'OK') {
+                    update_state('idle');
+                } else
+                    alert("Could interrupt run SPS");
+            });
+    }
+
+    function stop_sps() {
+        $("#problem-modal").modal("show");
+    }
+
+    function stop_sps_real() {
+        Skyline.API.get("/api/quit")
+            .success(function(data) {
+                if(data == 'OK') {
+                    update_state('stopped');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                } else
+                    alert("Could not stop SPS");
+            });
+    }
+
+    $(function() {
+        Skyline.API.get("/api/myStromDev")
+            .success(function(data) {
+                console.log(data);
+            })
+            .error(function(err) {
+                console.error(err);
+            });
+    });
+</script>
 <h1 class="my-5 text-center">Welcome to Ikarus SPS Web Interface</h1>
 <p class="text-muted mb-3">
     You have here a quick overview what is going on at this SPS.
@@ -51,15 +137,15 @@ $SPS_PROCESS = getenv("IKARUS_SPS_PROCESS");
                 <ul class="list-group">
                     <li class="list-group-item d-flex justify-content-between">
                         Status
-                        <span class="text-danger">
-                            Unreachable
+                        <span class="text-danger" id="status-text">
+                            Unknown
                         </span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                         SPS Process
                         <span>
                             <?php
-                            echo $SPS_PROCESS ? "#$SPS_PROCESS" : "-.-";
+                            echo isset($CONFIG["IKARUS_SPS_PROCID"]) ? ('#' . $CONFIG["IKARUS_SPS_PROCID"]) : "-.-";
                             ?>
                         </span>
                     </li>
@@ -104,19 +190,19 @@ $SPS_PROCESS = getenv("IKARUS_SPS_PROCESS");
                 </p>
                 <ul class="list-group">
                     <li class="list-group-item d-flex justify-content-between">
-                        <button class="btn btn-sm btn-success disabled">
+                        <button onclick="run_sps()" class="btn btn-sm btn-success disabled control" id="btn-run">
                             Run
                         </button>
                         <span class="text-muted">Runs the engine</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
-                        <button class="btn btn-sm btn-warning disabled">
+                        <button onclick="idle_sps()" class="btn btn-sm btn-warning disabled control" id="btn-idle">
                             Pause
                         </button>
                         <span class="text-muted">Interrupts the engine</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
-                        <button class="btn btn-sm btn-danger disabled">
+                        <button onclick="stop_sps();" class="btn btn-sm btn-danger disabled control" id="btn-stop">
                             Stop
                         </button>
                         <span class="text-muted">Stops the engine</span>
@@ -135,10 +221,43 @@ $SPS_PROCESS = getenv("IKARUS_SPS_PROCESS");
                 </p>
                 <hr>
                 <div class="text-center">
-                    <button class="btn btn-primary disabled">
+                    <a class="btn btn-primary disabled control text-white" id="btn-edit" href="/edit.php" target="_blank">
                         Open Editor
-                    </button>
+                    </a>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="problem-modal" tabindex="-1" role="dialog" aria-labelledby="problem-modal-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="problem-modal-title">Stop SPS</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" class="white-text">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <p id="problem-modal-msg">
+                        Stopping the SPS will shutdown all connected processes as well.<br>
+                        That means also this web server.
+                    </p>
+                    <p>
+                        After stopping the SPS, you are not able to interact with the SPS using this website anymore!<br>
+                        Do you really want to stop the SPS now?
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between" onclick="$('#problem-modal').modal('hide');">
+                <button class="btn btn-primary">
+                    Cancel
+                </button>
+                <button class="btn btn-danger" onclick="stop_sps_real()">
+                    Stop SPS
+                </button>
             </div>
         </div>
     </div>

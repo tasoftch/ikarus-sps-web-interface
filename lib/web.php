@@ -32,13 +32,44 @@
  *
  */
 
-$URI = $_SERVER["REQUEST_URI"];
+// This is the routing file of a web interface process.
+// It will route all /public/* URIs to the public folder and deliver the file if available.
+// It routes all /api/* URIs to the API/api.php script
 
+ini_set("error_reporting", E_ALL);
+
+require "vendor/autoload.php";
+
+$URI = $_SERVER["REQUEST_URI"];
 define("IKARUS_VERSION", '1.0.3');
 
+
 if(preg_match("%/?public/(.+?)$%i", $URI, $ms)) {
-    if(file_exists(__DIR__ . "$URI"))
-        return false;
+    $ext = explode(".", $URI);
+    switch(strtolower(array_pop($ext))) {
+        case 'js':
+            header("Content-Type: application/javascript");
+            break;
+        case 'json':
+            header("Content-Type: application/json");
+            break;
+        case 'css':
+            header("Content-Type: text/css");
+            break;
+    }
+
+    if(file_exists(__DIR__ . "$URI")) {
+        header("Cache-Control: max-age=86400");
+        readfile(__DIR__ . "$URI");
+    } else
+        http_response_code(404);
+
+    exit();
+}
+
+if(preg_match("%/?api/%", $URI)) {
+    require __DIR__ . "/API/api.php";
+    exit();
 }
 
 if(getenv("IKARUS_WEB_COMPONENTS_EMBED")) {
@@ -49,6 +80,11 @@ if(getenv("IKARUS_WEB_COMPONENTS_EMBED")) {
 
 if($URI == '/')
     $URI = 'index.php';
+
+if(stripos($URI, '/edit.php') === 0) {
+    require __DIR__ . "/contents/edit.php";
+    return;
+}
 
 $FILE = __DIR__ . "/contents/$URI";
 if(file_exists($FILE)) {
@@ -65,7 +101,16 @@ if(file_exists($FILE)) {
         }
     }
 
-    require $layoutFile;
+    $CONFIG = NULL;
+    if(file_exists( getcwd() . "/config.json" )) {
+        $CONFIG = json_decode( file_get_contents(  getcwd() . "/config.json"  ), true );
+    }
+    try {
+        require $layoutFile;
+    } catch (Throwable $exception) {
+        var_dump($exception);
+    }
+
 } else {
     http_response_code(404);
     echo "<h1>404 Not Found</h1>";

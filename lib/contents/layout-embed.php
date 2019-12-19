@@ -46,11 +46,13 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/public/css/bootstrap.min.css" media="all">
+    <script src="/public/js/jquery.min.js" type="application/javascript"></script>
+    <script src="/public/js/main.js" type="application/javascript"></script>
 
     <title><?=$TITLE?></title>
 </head>
 <body>
-<div class="container">
+<div class="container mb-5 pb-5">
     <?php
     require $FILE;
     ?>
@@ -72,7 +74,7 @@
     </div>
 </footer>
 
-<script src="/public/js/jquery.min.js" type="application/javascript"></script>
+
 <script src="/public/js/popper.min.js" type="application/javascript"></script>
 <script src="/public/js/bootstrap.min.js" type="application/javascript"></script>
 </body>
