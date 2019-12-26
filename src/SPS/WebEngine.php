@@ -36,13 +36,21 @@ namespace Ikarus\WEB\SPS;
 
 use Ikarus\Logic\Editor\ComponentSerialization;
 use Ikarus\Logic\Editor\Localization\LocalizationInterface;
+use Ikarus\Logic\EngineInterface;
+use Ikarus\Logic\Model\Component\ComponentInterface;
+use Ikarus\Logic\Model\Package\PackageInterface;
 use Ikarus\SPS\Helper\PluginManager;
 use Ikarus\SPS\Helper\ProcessManager;
+use Ikarus\SPS\Plugin\Error\DispatchedEventTriggerErrorHandlerPlugin;
+use Ikarus\SPS\Plugin\Listener\ListenerPluginInterface;
+use Ikarus\SPS\Plugin\PluginInterface;
 use Ikarus\SPS\Plugin\PluginManagementInterface;
 use Ikarus\SPS\Plugin\Trigger\CallbackTriggerPlugin;
+use Ikarus\SPS\Plugin\Trigger\TriggerPluginInterface;
+use Ikarus\WEB\SPS\Plugin\Logic\AbstractLogicPlugin;
 use Ikarus\WEB\SPS\Plugin\LogicPlugin;
 use Ikarus\WEB\SPS\Plugin\Trigger\WebCommunicationPlugin;
-use Ikarus\Web\WebServerProcess;
+use Ikarus\WEB\WebServerProcess;
 use TASoft\Util\Pipe\UnixPipe;
 use Ikarus\SPS\Engine;
 
@@ -56,6 +64,8 @@ class WebEngine extends Engine implements WebEngineInterface
     private $localization;
     /** @var bool */
     private $launchSPS = false;
+    /** @var \Ikarus\Logic\Engine|null */
+    private $logicEngine;
 
 
     /**
@@ -69,6 +79,65 @@ class WebEngine extends Engine implements WebEngineInterface
         parent::__construct($name);
         $this->hostname = $hostname;
         $this->port = $port;
+    }
+
+    /**
+     * Called to create a logic engine
+     *
+     * @return EngineInterface
+     */
+    protected function createLogicEngine(): EngineInterface {
+        return new \Ikarus\Logic\Engine();
+    }
+
+    /**
+     * @param PluginInterface|ComponentInterface|PackageInterface $plugin
+     * @param int $priority
+     * @return bool
+     */
+    public function addPlugin($plugin, int $priority = 0)
+    {
+        if(!$this->isRunning()) {
+            if($plugin instanceof LogicPlugin) {
+                if(!$this->logicEngine)
+                    $this->logicEngine = $this->createLogicEngine();
+                $plugin->setLogicEngine($this->logicEngine);
+            }
+
+            if($plugin instanceof PackageInterface) {
+                if(!$this->logicEngine)
+                    $this->logicEngine = $this->createLogicEngine();
+
+                foreach($plugin->getComponents() as $component) {
+                    $this->logicEngine->addComponent($component);
+                }
+                foreach ($plugin->getSocketTypes() as $component) {
+                    $this->logicEngine->addComponent($component);
+                }
+            }
+
+            if($plugin instanceof ComponentInterface) {
+                if(!$this->logicEngine)
+                    $this->logicEngine = $this->createLogicEngine();
+
+                $this->logicEngine->addComponent($plugin);
+            }
+
+            // Avoid registering irrelevant plugins for SPS engine
+            if($plugin instanceof TriggerPluginInterface || $plugin instanceof ListenerPluginInterface || $plugin instanceof DispatchedEventTriggerErrorHandlerPlugin)
+                return parent::addPlugin($plugin, $priority);
+            return true;
+        }
+        return false;
+    }
+
+    public function removePlugin($plugin)
+    {
+        if($this->logicEngine) {
+            $this->logicEngine->removeComponent($plugin);
+        }
+
+        return parent::removePlugin($plugin);
     }
 
 
@@ -122,7 +191,7 @@ class WebEngine extends Engine implements WebEngineInterface
                 'IKARUS_SPS_WEBC_ADDR' => $this->getMyHostname(),
                 'IKARUS_SPS_WEBC_PORT' => $port,
                 'IKARUS_SPS_PROCID' => getmypid(),
-                'IKARUS_SPS_LOGIC_ENABLED' => $logicPlugin ? true : false
+                'IKARUS_SPS_LOGIC_ENABLED' => $this->logicEngine ? true : false
             ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) );
 
             $this->addPlugin(new CallbackTriggerPlugin(function(PluginManagementInterface $management) use ($from, $to) {
@@ -150,26 +219,39 @@ class WebEngine extends Engine implements WebEngineInterface
 
                     if($command == 'status') {
                         $response = $didLaunch ? 'idle' : 'ready';
-                    } elseif($command == 'components' && $logicPlugin) {
-                        $response = ComponentSerialization::getSerializedComponents( $this->getPlugins(), 'serialize', $this->getLocalization() );
+                    } elseif($command == 'components' && $this->logicEngine) {
+                        $response = ComponentSerialization::getSerializedComponents( $this->logicEngine->getComponents(), 'serialize', $this->getLocalization() );
+                    }
+
+
+                    if($command == 'quit') {
+                        $to->sendData($response);
+                        break;
+                    }
+
+                    if($command != 'run') {
+                        $to->sendData($response);
+                        continue;
+                    }
+
+                    // Run SPS, so recompile logic project if available
+
+                    if($logicPlugin) {
+                        try {
+                            $logicPlugin->loadCompiledProject();
+                            $this->addPlugin($logicPlugin);
+
+
+                        } catch (\Throwable $exception) {
+                            $to->sendData("Error: " . $exception->getMessage());
+                            continue;
+                        }
                     }
 
                     $to->sendData($response);
-                    if($command == 'quit')
-                        break;
-                    if($command != 'run')
-                        continue;
-
-                    echo "... launching SPS ...\n";
                 }
 
                 $didLaunch = 1;
-
-                if($logicPlugin) {
-                    $logicPlugin->loadCompiledProject();
-                    $this->addPlugin($logicPlugin);
-                }
-
                 parent::run();
 
                 if($logicPlugin)

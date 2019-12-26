@@ -1,3 +1,18 @@
+<?php
+/**
+ * @var SPSCommunication $communication
+ */
+
+
+use Ikarus\WEB\SPSCommunication;
+
+$data = $communication->sendSilentlyToSPS("components");
+$components = unserialize($data);
+
+print_r($components);
+
+    exit();
+?>
 var signalSocket = new Rete.Socket('Signal');
 
 var anySocket = new Rete.Socket('Any');

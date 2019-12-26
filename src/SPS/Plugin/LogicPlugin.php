@@ -37,6 +37,7 @@ namespace Ikarus\WEB\SPS\Plugin;
 
 use Ikarus\Logic\EngineInterface;
 use Ikarus\SPS\Event\DispatchedEventInterface;
+use Ikarus\SPS\Exception\SPSException;
 use Ikarus\SPS\Plugin\AbstractPlugin;
 use Ikarus\SPS\Plugin\Listener\ListenerPluginInterface;
 use TASoft\EventManager\EventManager;
@@ -51,15 +52,31 @@ class LogicPlugin extends AbstractPlugin implements ListenerPluginInterface
     /** @var string */
     private $compiledProjectFilename;
 
-    /** @var string|null */
-    private $logicEngineClass;
+    /** @var EngineInterface */
+    private $logicEngine;
+
+    /**
+     * @return EngineInterface
+     */
+    public function getLogicEngine(): EngineInterface
+    {
+        return $this->logicEngine;
+    }
+
+    /**
+     * @param EngineInterface $logicEngine
+     */
+    public function setLogicEngine(EngineInterface $logicEngine)
+    {
+        $this->logicEngine = $logicEngine;
+    }
 
     /**
      * LogicPlugin constructor.
      * @param string $compiledProjectFilename
      * @param string|null $logicEngineClass
      */
-    public function __construct(string $compiledProjectFilename, string $logicEngineClass = NULL)
+    public function __construct(string $compiledProjectFilename)
     {
         $this->compiledProjectFilename = $compiledProjectFilename;
         $this->logicEngineClass = $logicEngineClass;
@@ -78,15 +95,7 @@ class LogicPlugin extends AbstractPlugin implements ListenerPluginInterface
      * Called by the web engine to recompile the project.
      */
     public function loadCompiledProject() {
-
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getLogicEngineClass(): ?string
-    {
-        return $this->logicEngineClass;
+        throw new SPSException("Test Scheisse");
     }
 
     public function getEventNames(): array

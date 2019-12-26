@@ -78,28 +78,38 @@
         }
     }
 
-    function run_sps() {
-        Skyline.API.get("/api/run")
-            .success(function(data) {
-                if(data == 'OK') {
-                    update_state('running');
-                } else
-                    alert("Could not run SPS");
-            });
+    function run_sps(sender) {
+        if(!$(sender).hasClass("disabled")) {
+            Skyline.API.get("/api/run")
+                .success(function(data) {
+                    if(data == 'OK') {
+                        update_state('running');
+                    } else {
+                        if(data.substr(0, 7) == 'Error: ')
+                            alert("Could not run SPS: " + data.substr(7));
+                        else
+                            alert("Could not run SPS");
+                    }
+                });
+        }
     }
 
-    function idle_sps() {
-        Skyline.API.get("/api/idle")
-            .success(function(data) {
-                if(data == 'OK') {
-                    update_state('idle');
-                } else
-                    alert("Could interrupt run SPS");
-            });
+    function idle_sps(sender) {
+        if(!$(sender).hasClass("disabled")) {
+            Skyline.API.get("/api/idle")
+                .success(function(data) {
+                    if(data == 'OK') {
+                        update_state('idle');
+                    } else
+                        alert("Could interrupt run SPS");
+                });
+        }
     }
 
-    function stop_sps() {
-        $("#problem-modal").modal("show");
+    function stop_sps(sender) {
+        if(!$(sender).hasClass("disabled")) {
+            $("#problem-modal").modal("show");
+        }
     }
 
     function stop_sps_real() {
@@ -190,19 +200,19 @@
                 </p>
                 <ul class="list-group">
                     <li class="list-group-item d-flex justify-content-between">
-                        <button onclick="run_sps()" class="btn btn-sm btn-success disabled control" id="btn-run">
+                        <button onclick="run_sps(this)" class="btn btn-sm btn-success disabled control" id="btn-run">
                             Run
                         </button>
                         <span class="text-muted">Runs the engine</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
-                        <button onclick="idle_sps()" class="btn btn-sm btn-warning disabled control" id="btn-idle">
+                        <button onclick="idle_sps(this)" class="btn btn-sm btn-warning disabled control" id="btn-idle">
                             Pause
                         </button>
                         <span class="text-muted">Interrupts the engine</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
-                        <button onclick="stop_sps();" class="btn btn-sm btn-danger disabled control" id="btn-stop">
+                        <button onclick="stop_sps(this);" class="btn btn-sm btn-danger disabled control" id="btn-stop">
                             Stop
                         </button>
                         <span class="text-muted">Stops the engine</span>
@@ -214,16 +224,31 @@
 
     <div class="col-lg-6 mt-4">
         <div class="card">
-            <h5 class="card-header">SPS Logic</h5>
+            <h5 class="card-header">Ikarus SPS Logic</h5>
             <div class="card-body">
                 <p class="text-muted">
                     You can only control the SPS via the Web Interface if the Webserver could connect to the SPS and the SPS does not run.
                 </p>
                 <hr>
                 <div class="text-center">
-                    <a class="btn btn-primary disabled control text-white" id="btn-edit" href="/edit.php" target="_blank">
-                        Open Editor
-                    </a>
+                    <?php
+                    if($CONFIG["IKARUS_SPS_LOGIC_ENABLED"] ?? false) {
+                        ?>
+                        <a class="btn btn-primary disabled control text-white" id="btn-edit" href="/edit.php" target="_blank">
+                            Open Editor
+                        </a>
+                        <?php
+                    } else {
+                        ?>
+                        <div class="alert alert-warning">
+                            <h3 class="alert-header">Ikaurs Logic package missing</h3>
+                            <p>
+                                The Ikarus Logic packages or plugins are missing.
+                            </p>
+                        </div>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
         </div>

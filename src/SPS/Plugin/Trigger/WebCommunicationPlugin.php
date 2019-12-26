@@ -71,6 +71,7 @@ class WebCommunicationPlugin extends AbstractPlugin implements TriggerPluginInte
         }
 
         socket_getsockname($sock, $name, $port);
+
         $this->getFromProcessPipe()->sendData($port);
 
 
