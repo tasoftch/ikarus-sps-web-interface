@@ -32,7 +32,7 @@
  *
  */
 
-namespace Ikarus\WEB;
+namespace Ikarus\WEB\SPS;
 
 
 use Ikarus\WEB\Exception\CommunicationException;

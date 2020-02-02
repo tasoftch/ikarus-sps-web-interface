@@ -20,7 +20,8 @@
     "ikarus/logic-engine": "dev-master",
     "ikarus/logic-compiler": "dev-master",
     "ext-sockets": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-pcntl": "*"
   },
   "bin": [
     "lib/web.php"

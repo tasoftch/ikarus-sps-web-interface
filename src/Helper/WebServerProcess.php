@@ -32,16 +32,16 @@
  *
  */
 
-namespace Ikarus\WEB;
+namespace Ikarus\WEB\Helper;
 
 
 use TASoft\Util\BackgroundProcess;
 
 class WebServerProcess extends BackgroundProcess
 {
-    public function __construct(string $host, int $port = 80)
+    public function __construct(string $host = '0.0.0.0', int $port = 80)
     {
-        $t = escapeshellarg( dirname(__DIR__) . "/lib" );
+        $t = escapeshellarg(dirname(__DIR__) . "/lib");
         parent::__construct("php -S $host:$port -t $t $t/web.php");
     }
 

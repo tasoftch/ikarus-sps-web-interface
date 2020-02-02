@@ -32,11 +32,11 @@
  *
  */
 
-namespace Ikarus\WEB\SPS\Plugin\Trigger;
+namespace Ikarus\WEB\Helper;
 
 
 use Ikarus\SPS\Plugin\AbstractPlugin;
-use Ikarus\SPS\Plugin\PluginManagementInterface;
+use Ikarus\SPS\Plugin\Management\TriggeredPluginManagementInterface;
 use Ikarus\SPS\Plugin\TearDownPluginInterface;
 use Ikarus\SPS\Plugin\Trigger\TriggerPluginInterface;
 use TASoft\Util\Pipe\PipeInterface;
@@ -60,7 +60,7 @@ class WebCommunicationPlugin extends AbstractPlugin implements TriggerPluginInte
         $this->fromProcessPipe = $fromProcessPipe;
     }
 
-    public function run(PluginManagementInterface $manager)
+    public function run(TriggeredPluginManagementInterface $manager)
     {
         if (($this->sock = $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
             trigger_error( "socket_create() failed: " . socket_strerror(socket_last_error()), E_USER_WARNING);
@@ -126,26 +126,10 @@ class WebCommunicationPlugin extends AbstractPlugin implements TriggerPluginInte
     }
 
     /**
-     * @param PipeInterface $toProcessPipe
-     */
-    public function setToProcessPipe(PipeInterface $toProcessPipe)
-    {
-        $this->toProcessPipe = $toProcessPipe;
-    }
-
-    /**
      * @return PipeInterface
      */
     public function getFromProcessPipe(): PipeInterface
     {
         return $this->fromProcessPipe;
-    }
-
-    /**
-     * @param PipeInterface $fromProcessPipe
-     */
-    public function setFromProcessPipe(PipeInterface $fromProcessPipe)
-    {
-        $this->fromProcessPipe = $fromProcessPipe;
     }
 }

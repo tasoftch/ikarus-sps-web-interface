@@ -8,7 +8,7 @@ if(file_exists( getcwd() . "/config.json" )) {
     $CONFIG = json_decode( file_get_contents(  getcwd() . "/config.json"  ), true );
 }
 
-$host = $CONFIG["IKARUS_SPS_WEBC_ADDR"] ?? NULL;
+$host = $CONFIG["IKARUS_SPS_WEBC_ADDR"][0] ?? NULL;
 $port = $CONFIG["IKARUS_SPS_WEBC_PORT"] ?? 0;
 
 if(!$host || !$port) {
