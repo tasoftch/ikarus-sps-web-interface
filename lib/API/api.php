@@ -1,21 +1,11 @@
 <?php
 
 use Ikarus\WEB\Exception\SocketException;
-use Ikarus\WEB\SPSCommunication;
+use Ikarus\WEB\SPS\Communication\AbstractCommunication;
 
-$CONFIG = NULL;
-if(file_exists( getcwd() . "/config.json" )) {
-    $CONFIG = json_decode( file_get_contents(  getcwd() . "/config.json"  ), true );
-}
 
-$host = $CONFIG["IKARUS_SPS_WEBC_ADDR"][0] ?? NULL;
-$port = $CONFIG["IKARUS_SPS_WEBC_PORT"] ?? 0;
+$communication = AbstractCommunication::makeCommunication($CONFIG);
 
-if(!$host || !$port) {
-    trigger_error("NO CONFIGURATION SET", E_USER_ERROR);
-}
-
-$communication = new SPSCommunication($host, $port);
 
 if($_SERVER["REQUEST_URI"] == '/api/status') {
     try {
@@ -121,7 +111,7 @@ if($_SERVER["REQUEST_URI"] == '/api/idle') {
 
 if($_SERVER["REQUEST_URI"] == '/api/quit') {
     try {
-        echo $communication->sendToSPS("quit");
+        echo $communication->sendToSPS("stop");
     } catch (\Throwable $exception) {
     }
     exit();

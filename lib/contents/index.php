@@ -124,16 +124,6 @@
                     alert("Could not stop SPS");
             });
     }
-
-    $(function() {
-        Skyline.API.get("/api/myStromDev")
-            .success(function(data) {
-                console.log(data);
-            })
-            .error(function(err) {
-                console.error(err);
-            });
-    });
 </script>
 <h1 class="my-5 text-center">Welcome to Ikarus SPS Web Interface</h1>
 <p class="text-muted mb-3">

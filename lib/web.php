@@ -37,6 +37,11 @@
 // It routes all /api/* URIs to the API/api.php script
 
 ini_set("error_reporting", E_ALL);
+$root_dir = getcwd();
+
+do {
+    chdir( dirname( getcwd() ) );
+} while(!file_exists("vendor") && strlen(getcwd()) >= 5 );
 
 require "vendor/autoload.php";
 
@@ -67,7 +72,15 @@ if(preg_match("%/?public/(.+?)$%i", $URI, $ms)) {
     exit();
 }
 
+
+$CONFIG = NULL;
+if(file_exists( "$root_dir/config.json" )) {
+    $CONFIG = json_decode( file_get_contents(  "$root_dir/config.json"  ), true );
+}
+
+
 if(preg_match("%/?api/%", $URI)) {
+    header("Access-Control-Allow-Origin: *");
     require __DIR__ . "/API/api.php";
     exit();
 }
@@ -101,10 +114,6 @@ if(file_exists($FILE)) {
         }
     }
 
-    $CONFIG = NULL;
-    if(file_exists( getcwd() . "/config.json" )) {
-        $CONFIG = json_decode( file_get_contents(  getcwd() . "/config.json"  ), true );
-    }
     try {
         require $layoutFile;
     } catch (Throwable $exception) {
