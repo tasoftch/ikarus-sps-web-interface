@@ -39,9 +39,9 @@
 ini_set("error_reporting", E_ALL);
 $root_dir = getcwd();
 
-do {
+while(!file_exists("vendor") && strlen(getcwd()) >= 5 ) {
     chdir( dirname( getcwd() ) );
-} while(!file_exists("vendor") && strlen(getcwd()) >= 5 );
+}
 
 require "vendor/autoload.php";
 
