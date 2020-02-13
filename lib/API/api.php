@@ -1,20 +1,47 @@
 <?php
 
+use Ikarus\SPS\Communication\InternetProtocolCommunication;
+use Ikarus\SPS\Communication\UnixCommunication;
+use Ikarus\SPS\Exception\SPSException;
 use Ikarus\WEB\Exception\SocketException;
-use Ikarus\WEB\SPS\Communication\AbstractCommunication;
 
 
-$communication = AbstractCommunication::makeCommunication($CONFIG);
+$host = $CONFIG["IKARUS_SPS_WEBC_ADDR"] ?? NULL;
+$port = $CONFIG["IKARUS_SPS_WEBC_PORT"] ?? 0;
+$unix = $CONFIG["IKARUS_SPS_WEBC_UNIX"] ?? NULL;
+
+if($host && $port)
+    $communication = new InternetProtocolCommunication($host, $port);
+elseif ($unix)
+    $communication = new UnixCommunication($unix);
+else
+    throw new SPSException("Can not establish communication to sps");
 
 
 if($_SERVER["REQUEST_URI"] == '/api/status') {
     try {
-        header("Content-Type: text/plain");
+        header("Content-Type: application/json");
 
-        echo $communication->sendToSPS("status");
+        $response = @$communication->sendToSPS("status");
+        echo json_encode([
+            'success' => true,
+            'errors' => [],
+            'response' => $response
+        ]);
     } catch (SocketException $exception) {
         if($exception->getCode() == 11)
             echo "busy";
+    } catch (SPSException $exception) {
+        echo json_encode([
+            'success' => false,
+            'errors' => [
+                [
+                    'level' => 'exception',
+                    'code' => $exception->getCode(),
+                    'message' => $exception->getMessage()
+                ]
+            ]
+        ]);
     }
     exit();
 }
@@ -124,10 +151,5 @@ if($_SERVER["REQUEST_URI"] == '/api/components.js') {
 
 if($_SERVER["REQUEST_URI"] == '/api/scenes.js') {
     require __DIR__ . "/scenes.js.php";
-    exit();
-}
-
-if($_SERVER["REQUEST_URI"] == '/api/myStromDev') {
-
     exit();
 }

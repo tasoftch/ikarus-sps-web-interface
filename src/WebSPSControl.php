@@ -36,6 +36,7 @@ namespace Ikarus\WEB;
 
 
 use Ikarus\Logic\Editor\Localization\LocalizationInterface;
+use Ikarus\SPS\Communication\InternetProtocolCommunication;
 use Ikarus\SPS\CyclicEngine;
 use Ikarus\SPS\EngineInterface;
 use Ikarus\SPS\Helper\CyclicPluginManager;
@@ -168,15 +169,19 @@ class WebSPSControl implements WebSPSControlInterface
             } elseif($sps instanceof CyclicEngine) {
                 $file_root = getcwd();
 
+                $sps->addPlugin( $comPlugin = new \Ikarus\WEB\SPS\Plugin\Cyclic\WebCommunicationPlugin($this->getMyHostname(), 0) );
+
+                $comPlugin->establishConnection();
+
                 file_put_contents( $configName, json_encode([
-                    'IKARUS_SPS_WEBC_UNIX' => "$file_root/ikarus.sock",
+                    'IKARUS_SPS_WEBC_ADDR' => $comPlugin->getAddress(),
+                    'IKARUS_SPS_WEBC_PORT' => $comPlugin->getPort(),
                     'IKARUS_SPS_PROCID' => getmypid(),
                     'IKARUS_SPS_LOGIC_ENABLED' => $logicPlugin ? true : false,
                     "IKARUS_SPS_FILE_ROOT" => $file_root
                 ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) );
 
-                $sps->addPlugin( $comPlugin = new \Ikarus\WEB\SPS\Plugin\Cyclic\WebCommunicationPlugin() );
-
+                
                 $management = new CyclicPluginManager();
                 $vi = new ValueInjector($management);
                 $vi->f = function() use ($sps) {return $sps->getFrequency();};

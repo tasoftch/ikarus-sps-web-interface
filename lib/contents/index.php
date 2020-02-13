@@ -47,8 +47,13 @@
     $(function() {
         Skyline.API.get("/api/status")
             .success(function(data) {
-                update_state(data);
-            });
+                update_state(data.response);
+            })
+            .error(function(error) {
+                $("#status-text").parent().addClass("list-group-item-danger").attr('title', error.message);
+                $("#status-text").text("Error");
+            })
+        ;
     });
 
     function update_state(state) {
