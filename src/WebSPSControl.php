@@ -35,17 +35,13 @@
 namespace Ikarus\WEB;
 
 
-use Ikarus\Logic\Editor\Localization\LocalizationInterface;
-use Ikarus\SPS\Communication\InternetProtocolCommunication;
 use Ikarus\SPS\CyclicEngine;
 use Ikarus\SPS\EngineInterface;
 use Ikarus\SPS\Helper\CyclicPluginManager;
 use Ikarus\SPS\Helper\ProcessManager;
 use Ikarus\SPS\Helper\TriggeredPluginManager;
 use Ikarus\SPS\Logic\Plugin\AbstractLogicEnginePlugin;
-use Ikarus\SPS\Plugin\Management\CyclicPluginManagementInterface;
 use Ikarus\SPS\Plugin\Management\TriggeredPluginManagementInterface;
-use Ikarus\SPS\Plugin\TearDownPluginInterface;
 use Ikarus\SPS\Plugin\Trigger\CallbackTriggerPlugin;
 use Ikarus\SPS\TriggeredEngine;
 use Ikarus\WEB\Helper\WebServerProcess;
@@ -54,8 +50,6 @@ use TASoft\Util\ValueInjector;
 
 class WebSPSControl implements WebSPSControlInterface
 {
-    /** @var LocalizationInterface|null */
-    private $localization;
     /** @var EngineInterface */
     private $sps;
 
@@ -66,19 +60,12 @@ class WebSPSControl implements WebSPSControlInterface
     /**
      * WebSPSControl constructor.
      * @param EngineInterface $spsEngine
+     * @param bool $startImmediately
      */
     public function __construct(EngineInterface $spsEngine, bool $startImmediately = false)
     {
         $this->sps = $spsEngine;
         $this->startImmediately = $startImmediately;
-    }
-
-    /**
-     * @return LocalizationInterface|null
-     */
-    public function getLocalization(): ?LocalizationInterface
-    {
-        return $this->localization;
     }
 
     public function getControlledSPS(): EngineInterface

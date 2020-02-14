@@ -1,7 +1,7 @@
 <?php
 
-use Ikarus\SPS\Communication\InternetProtocolCommunication;
-use Ikarus\SPS\Communication\UnixCommunication;
+use Ikarus\SPS\Client\TcpClient;
+use Ikarus\SPS\Client\UnixClient;
 use Ikarus\SPS\Exception\SPSException;
 use Ikarus\WEB\Exception\SocketException;
 
@@ -11,9 +11,9 @@ $port = $CONFIG["IKARUS_SPS_WEBC_PORT"] ?? 0;
 $unix = $CONFIG["IKARUS_SPS_WEBC_UNIX"] ?? NULL;
 
 if($host && $port)
-    $communication = new InternetProtocolCommunication($host, $port);
+    $communication = new TcpClient($host, $port);
 elseif ($unix)
-    $communication = new UnixCommunication($unix);
+    $communication = new UnixClient($unix);
 else
     throw new SPSException("Can not establish communication to sps");
 
@@ -22,7 +22,7 @@ if($_SERVER["REQUEST_URI"] == '/api/status') {
     try {
         header("Content-Type: application/json");
 
-        $response = @$communication->sendToSPS("status");
+        $response = @$communication->sendCommand("status");
         echo json_encode([
             'success' => true,
             'errors' => [],
@@ -120,16 +120,16 @@ if($_SERVER["REQUEST_URI"] == '/api/scene-add') {
 
 if($_SERVER["REQUEST_URI"] == '/api/run') {
     try {
-        echo $communication->sendToSPS("run");
-    } catch (\Throwable $exception) {
+        echo $communication->sendCommand("run");
+    } catch (Throwable $exception) {
     }
     exit();
 }
 
 if($_SERVER["REQUEST_URI"] == '/api/idle') {
     try {
-        echo $communication->sendToSPS("idle");
-    } catch (\Throwable $exception) {
+        echo $communication->sendCommand("idle");
+    } catch (Throwable $exception) {
     }
     exit();
 }
@@ -138,8 +138,8 @@ if($_SERVER["REQUEST_URI"] == '/api/idle') {
 
 if($_SERVER["REQUEST_URI"] == '/api/quit') {
     try {
-        echo $communication->sendToSPS("stop");
-    } catch (\Throwable $exception) {
+        echo $communication->sendCommand("stop");
+    } catch (Throwable $exception) {
     }
     exit();
 }

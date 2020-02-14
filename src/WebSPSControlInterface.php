@@ -35,7 +35,6 @@
 namespace Ikarus\WEB;
 
 
-use Ikarus\Logic\Editor\Localization\LocalizationInterface;
 use Ikarus\SPS\EngineInterface;
 
 interface WebSPSControlInterface
@@ -60,11 +59,4 @@ interface WebSPSControlInterface
      * @return int
      */
     public function run(string $host = '0.0.0.0', int $port = 80);
-
-    /**
-     * Gets a localization instance to translate labels into desired languages.
-     *
-     * @return LocalizationInterface|null
-     */
-    public function getLocalization(): ?LocalizationInterface;
 }

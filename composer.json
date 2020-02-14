@@ -15,9 +15,10 @@
   },
   "require" : {
     "php": "^7.2",
-    "ikarus/logic-editor": "dev-master",
-    "ikarus/logic-engine": "dev-master",
-    "ikarus/logic-compiler": "dev-master",
+
+    "ikarus/sps-server": "^0.1",
+    "ikarus/sps-client": "^0.1",
+
     "ext-sockets": "*",
     "ext-json": "*",
     "ext-pcntl": "*"
