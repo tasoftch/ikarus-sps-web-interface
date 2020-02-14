@@ -22,7 +22,7 @@ if($_SERVER["REQUEST_URI"] == '/api/status') {
     try {
         header("Content-Type: application/json");
 
-        $response = @$communication->sendCommand("status");
+        $response = @$communication->sendSilentCommand("status");
         echo json_encode([
             'success' => true,
             'errors' => [],
