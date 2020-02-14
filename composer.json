@@ -15,13 +15,15 @@
   },
   "require" : {
     "php": "^7.2",
-    "ikarus/sps-logic": "dev-master",
     "ikarus/logic-editor": "dev-master",
     "ikarus/logic-engine": "dev-master",
     "ikarus/logic-compiler": "dev-master",
     "ext-sockets": "*",
     "ext-json": "*",
     "ext-pcntl": "*"
+  },
+  "require-dev": {
+    "ikarus/sps-logic": "dev-master"
   },
   "bin": [
     "lib/web.php"
