@@ -22,7 +22,7 @@ if($_SERVER["REQUEST_URI"] == '/api/status') {
     try {
         header("Content-Type: application/json");
 
-        $response = @$communication->sendSilentCommand("status");
+        $response = @$communication->sendCommandNamed("status");
         echo json_encode([
             'success' => true,
             'errors' => [],
@@ -120,7 +120,7 @@ if($_SERVER["REQUEST_URI"] == '/api/scene-add') {
 
 if($_SERVER["REQUEST_URI"] == '/api/run') {
     try {
-        echo $communication->sendCommand("run");
+        echo $communication->sendCommandNamed("run");
     } catch (Throwable $exception) {
     }
     exit();
@@ -128,7 +128,7 @@ if($_SERVER["REQUEST_URI"] == '/api/run') {
 
 if($_SERVER["REQUEST_URI"] == '/api/idle') {
     try {
-        echo $communication->sendCommand("idle");
+        echo $communication->sendCommandNamed("idle");
     } catch (Throwable $exception) {
     }
     exit();
@@ -138,7 +138,7 @@ if($_SERVER["REQUEST_URI"] == '/api/idle') {
 
 if($_SERVER["REQUEST_URI"] == '/api/quit') {
     try {
-        echo $communication->sendCommand("stop");
+        echo $communication->sendCommandNamed("stop");
     } catch (Throwable $exception) {
     }
     exit();
